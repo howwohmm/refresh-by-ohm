@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Refresh — Icon Generator</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #080808;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      gap: 2.5rem;
+      padding: 2rem;
+    }
+
+    h1 {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: #444;
+    }
+
+    .previews {
+      display: flex;
+      align-items: flex-end;
+      gap: 3rem;
+    }
+
+    .preview {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    canvas {
+      border-radius: 22.5%;
+      box-shadow: 0 0 0 1px #1a1a1a;
+    }
+
+    .label {
+      font-size: 0.6rem;
+      color: #333;
+      letter-spacing: 0.1em;
+    }
+
+    .btn {
+      background: none;
+      border: 1px solid #333;
+      color: #aaa;
+      font-family: inherit;
+      font-size: 0.8rem;
+      letter-spacing: 0.04em;
+      padding: 0.65rem 2rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: color 150ms, border-color 150ms;
+    }
+
+    .btn:hover { color: #fff; border-color: #666; }
+
+    .note {
+      font-size: 0.62rem;
+      color: #2a2a2a;
+      letter-spacing: 0.06em;
+      text-align: center;
+      line-height: 1.8;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Refresh — icon generator</h1>
+
+  <div class="previews">
+    <div class="preview">
+      <canvas id="c128" width="128" height="128"></canvas>
+      <span class="label">128 × 128</span>
+    </div>
+    <div class="preview">
+      <canvas id="c48" width="48" height="48"></canvas>
+      <span class="label">48 × 48</span>
+    </div>
+    <div class="preview">
+      <canvas id="c16" width="16" height="16"></canvas>
+      <span class="label">16 × 16</span>
+    </div>
+  </div>
+
+  <button class="btn" onclick="downloadAll()">↓ download all three icons</button>
+
+  <p class="note">
+    saves icon16.png · icon48.png · icon128.png<br>
+    move them into /ai-tab/icons/
+  </p>
+
+  <script>
+    function roundRect(ctx, x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+    }
+
+    function drawIcon(canvas) {
+      const s   = canvas.width;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, s, s);
+
+      // Background — dark with a very subtle blue tint at bottom
+      const bg = ctx.createLinearGradient(0, 0, 0, s);
+      bg.addColorStop(0, '#0a0a0a');
+      bg.addColorStop(1, '#0a0a14');
+      roundRect(ctx, 0, 0, s, s, s * 0.22);
+      ctx.fillStyle = bg;
+      ctx.fill();
+
+      // "R" — white, bold, optically centered
+      ctx.fillStyle = '#f2f2f2';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      if (s >= 48) {
+        ctx.font = `700 ${Math.round(s * 0.56)}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+        ctx.fillText('R', s * 0.49, s * 0.50);
+
+        // Signal dot — bottom right, blue
+        const dotR = s * 0.10;
+        const dotX = s * 0.72;
+        const dotY = s * 0.72;
+
+        // Dot glow
+        const glow = ctx.createRadialGradient(dotX, dotY, 0, dotX, dotY, dotR * 2.5);
+        glow.addColorStop(0, 'rgba(68, 102, 238, 0.35)');
+        glow.addColorStop(1, 'rgba(68, 102, 238, 0)');
+        ctx.beginPath();
+        ctx.arc(dotX, dotY, dotR * 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = glow;
+        ctx.fill();
+
+        // Dot solid
+        ctx.beginPath();
+        ctx.arc(dotX, dotY, dotR, 0, Math.PI * 2);
+        ctx.fillStyle = '#4466ee';
+        ctx.fill();
+      } else {
+        // 16px — just the R, no dot (too small)
+        ctx.font = `700 ${Math.round(s * 0.62)}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+        ctx.fillText('R', s * 0.50, s * 0.52);
+      }
+    }
+
+    // Render all on load
+    ['c128', 'c48', 'c16'].forEach(id => drawIcon(document.getElementById(id)));
+
+    function download(canvas, filename) {
+      const a  = document.createElement('a');
+      a.download = filename;
+      a.href     = canvas.toDataURL('image/png');
+      a.click();
+    }
+
+    function downloadAll() {
+      download(document.getElementById('c128'), 'icon128.png');
+      setTimeout(() => download(document.getElementById('c48'),  'icon48.png'),  300);
+      setTimeout(() => download(document.getElementById('c16'),  'icon16.png'),  600);
+    }
+  </script>
+
+</body>
+</html>

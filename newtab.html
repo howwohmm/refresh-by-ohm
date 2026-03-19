@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Refresh</title>
+  <link rel="stylesheet" href="newtab.css" />
+</head>
+<body>
+
+  <!-- Onboarding — shown only on first install -->
+  <div id="onboarding" class="onboarding hidden">
+
+    <!-- Step 1: Welcome -->
+    <div id="ob-step-1" class="ob-step">
+      <div class="ob-content ob-content-center">
+        <div class="ob-logo">Refresh</div>
+        <div class="ob-byohm">by ohm.</div>
+        <div class="ob-tagline">One headline. Every new tab.</div>
+        <div class="ob-desc">The signal, not the noise — pulled live from labs,<br>newsrooms, and the communities that follow AI closely.</div>
+        <button class="ob-primary" id="ob-next-1">get started →</button>
+        <div class="ob-hint">takes 30 seconds · no account required</div>
+      </div>
+    </div>
+
+    <!-- Step 2: UI tour -->
+    <div id="ob-step-2" class="ob-step hidden">
+      <button class="ob-back" id="ob-back-2">←</button>
+      <div class="ob-content ob-content-wide">
+        <div class="ob-heading">here's how it works</div>
+        <div class="ob-tour">
+
+          <div class="ob-tour-item">
+            <div class="ob-tour-label">The headline</div>
+            <div class="ob-tour-desc">One story at a time, ranked by signal strength. Navigate with ← → or Space — press <kbd>O</kbd> to open.</div>
+          </div>
+
+          <div class="ob-tour-item">
+            <div class="ob-tour-label">Number, top right</div>
+            <div class="ob-tour-desc">signal score, 0–100. combines source coverage, hacker news traction, and recency. higher = more worth your time.</div>
+          </div>
+
+          <div class="ob-tour-item">
+            <div class="ob-tour-label">Dot strip, bottom</div>
+            <div class="ob-tour-desc">48 hours of stories on a timeline. right = now. hover to preview, click to jump.</div>
+          </div>
+
+        </div>
+        <button class="ob-primary" id="ob-next-2">got it →</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Sources -->
+    <div id="ob-step-3" class="ob-step hidden">
+      <button class="ob-back" id="ob-back-3">←</button>
+      <div class="ob-content ob-content-wide">
+        <div class="ob-heading">your sources</div>
+        <div class="ob-subdesc">29 feeds, all on by default.<br>turn off anything you don't care about.<br>change it anytime — press <kbd>,</kbd> to reopen.</div>
+        <div id="ob-source-groups" class="ob-source-groups"></div>
+        <div class="ob-cta-row">
+          <button class="ob-primary" id="ob-next-3">start reading →</button>
+          <button class="ob-skip" id="ob-skip-3">skip for now</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Wordmark — fixed top left -->
+  <div class="wordmark">Refresh</div>
+
+  <!-- Signal score — fixed top right -->
+  <div id="signal-score" class="signal-score hidden">
+    <span id="score-number" class="signal-number" data-tier="low">–</span>
+    <span class="signal-label">signal</span>
+  </div>
+
+  <!-- Saved confirmation toast — fades in/out on S press -->
+  <div id="save-toast" class="save-toast hidden">saved</div>
+
+  <!-- Filter bar — appears when F is pressed -->
+  <div id="filter-bar" class="filter-bar hidden">
+    <span class="filter-icon">⌕</span>
+    <input id="filter-input" class="filter-input" type="text"
+           placeholder="search stories…" autocomplete="off" spellcheck="false" />
+    <span id="filter-count" class="filter-count"></span>
+    <button id="btn-clear-filter" class="filter-clear" aria-label="Clear filter">✕</button>
+  </div>
+
+  <!-- Reading list sidebar -->
+  <aside id="reading-sidebar" class="reading-sidebar" aria-label="Reading list">
+    <div class="sidebar-header">
+      <span class="sidebar-title">reading list</span>
+      <div class="sidebar-header-actions">
+        <button id="btn-export-md" class="sidebar-btn">↓ export as markdown</button>
+        <button id="btn-close-sidebar" class="sidebar-btn sidebar-close-btn" aria-label="Close">✕</button>
+      </div>
+    </div>
+    <div id="sidebar-items" class="sidebar-items"></div>
+    <div id="sidebar-empty-msg" class="sidebar-empty hidden">
+      <p>nothing saved yet.</p>
+      <p>press <kbd>S</kbd> on any story to save it here.</p>
+    </div>
+  </aside>
+
+  <!-- Mixing board overlay -->
+  <div id="mixing-board" class="mixing-board hidden">
+    <div class="mixing-panel">
+      <div class="mixing-header">
+        <span class="mixing-title">sources</span>
+        <div class="mixing-header-right">
+          <button id="btn-reset-sources" class="mixing-meta-btn">reset all</button>
+          <button id="btn-close-mixing" class="mixing-meta-btn">✕</button>
+        </div>
+      </div>
+      <div id="mixing-groups" class="mixing-groups"></div>
+    </div>
+  </div>
+
+  <!-- Main app -->
+  <div id="app">
+
+    <!-- Loading -->
+    <div id="state-loading" class="state" aria-live="polite">
+      <p class="loading-text">fetching signal…</p>
+    </div>
+
+    <!-- Empty -->
+    <div id="state-empty" class="state hidden" aria-live="polite">
+      <p class="empty-headline">quiet out there.</p>
+      <p class="empty-sub">nothing in the last 48 hours worth surfacing. check back soon.</p>
+      <button id="btn-refresh-empty" class="refresh-btn-empty">↻ try again</button>
+    </div>
+
+    <!-- Story -->
+    <div id="state-story" class="state hidden" aria-live="polite">
+      <button id="btn-prev" class="nav-btn" aria-label="Previous">&#8592;</button>
+
+      <div id="story-content" class="story-content">
+        <a id="headline" class="headline" href="#" target="_self" rel="noopener"></a>
+        <p id="story-type-pill" class="story-type-pill"></p>
+        <p id="source-badge" class="source-badge"></p>
+        <p id="time-ago" class="time-ago"></p>
+        <p id="ambient-line" class="ambient-line"></p>
+      </div>
+
+      <button id="btn-next" class="nav-btn" aria-label="Next">&#8594;</button>
+    </div>
+
+  </div>
+
+  <!-- Bottom bar -->
+  <div id="bottom-bar" class="bottom-bar hidden">
+    <div class="bottom-bar-left">
+      <a class="brand-byline" href="https://x.com/ohmdreams" target="_blank" rel="noopener">by ohm.</a>
+      <span class="bottom-sep">·</span>
+      <span id="last-fetched" class="last-fetched"></span>
+      <span id="stale-warning" class="stale-warning hidden"></span>
+    </div>
+
+    <span id="story-counter" class="story-counter"></span>
+
+    <div class="bottom-bar-right">
+      <!-- Keyboard hints — visible on hover of bottom bar -->
+      <span class="kbd-hints">
+        <kbd>S</kbd> save &nbsp;
+        <kbd>L</kbd> list &nbsp;
+        <kbd>W</kbd> briefing &nbsp;
+        <kbd>M</kbd> map &nbsp;
+        <kbd>O</kbd> open &nbsp;
+        <kbd>F</kbd> filter &nbsp;
+        <kbd>Space</kbd> next
+      </span>
+      <button id="btn-mixing" class="icon-btn" aria-label="Sources" title="Sources (,)">⊟</button>
+      <button id="btn-list" class="icon-btn" aria-label="Reading list" title="Reading list (L)">☰</button>
+      <button id="btn-refresh" class="refresh-btn" aria-label="Refresh" title="Refresh">↻</button>
+    </div>
+  </div>
+
+  <!-- Map overlay — M key -->
+  <div id="map-overlay" class="map-overlay hidden">
+    <canvas id="map-canvas" class="map-canvas"></canvas>
+    <div class="map-header">
+      <div class="map-header-left">
+        <span class="map-title">map</span>
+        <span class="map-sep">·</span>
+        <span id="map-count" class="map-count"></span>
+      </div>
+      <button id="btn-close-map" class="map-close-btn">✕</button>
+    </div>
+    <div id="map-tooltip" class="map-tooltip hidden"></div>
+    <div class="map-legend">
+      <span style="color:#4466ee">●</span> launch &ensp;
+      <span style="color:#8844cc">●</span> research &ensp;
+      <span style="color:#339966">●</span> funding &ensp;
+      <span style="color:#cc8833">●</span> open source &ensp;
+      <span style="color:#cc3333">●</span> developing
+    </div>
+  </div>
+
+  <!-- Briefing overlay — W key -->
+  <div id="briefing-overlay" class="briefing-overlay hidden">
+    <div class="briefing-panel">
+      <div id="briefing-header" class="briefing-header"></div>
+      <div id="briefing-body" class="briefing-body"></div>
+    </div>
+  </div>
+
+  <!-- Timeline bar — 48hr story density strip -->
+  <div id="timeline-bar" class="timeline-bar hidden">
+    <div id="timeline-track" class="timeline-track">
+      <div id="timeline-dots" class="timeline-dots"></div>
+      <div id="timeline-cursor" class="timeline-cursor"></div>
+    </div>
+    <div id="timeline-tooltip" class="timeline-tooltip hidden"></div>
+  </div>
+
+  <script src="newtab.js"></script>
+</body>
+</html>

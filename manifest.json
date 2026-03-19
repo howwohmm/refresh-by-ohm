@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+  "name": "Refresh",
+  "description": "The signal, not the noise. AI news, one headline at a time.",
+  "version": "1.0.0",
+  "icons": {
+    "16":  "icons/icon16.png",
+    "48":  "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": [
+    "storage",
+    "alarms"
+  ],
+  "host_permissions": [
+    "https://openai.com/*",
+    "https://raw.githubusercontent.com/*",
+    "https://blog.google/*",
+    "https://research.google/*",
+    "https://huggingface.co/*",
+    "https://machinelearning.apple.com/*",
+    "https://techcrunch.com/*",
+    "https://www.theverge.com/*",
+    "https://venturebeat.com/*",
+    "https://www.wired.com/*",
+    "https://www.technologyreview.com/*",
+    "https://hn.algolia.com/*",
+    "https://www.ycombinator.com/*",
+    "https://www.reddit.com/*"
+  ]
+}
